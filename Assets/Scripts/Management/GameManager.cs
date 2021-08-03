@@ -6,4 +6,6 @@ public class GameManager : MonoBehaviour {
     private void Awake() {
         Game.Manager = this;
     }
+
+    public GameObject BulletPrefab;
 }

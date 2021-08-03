@@ -7,6 +7,7 @@ public static class Game {
     public static InputActions Input = new _InputActions();
 
     public static GameManager Manager;
+    public static UIManager UI;
 
 
 
