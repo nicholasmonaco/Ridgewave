@@ -159,6 +159,7 @@ GameObject:
   - component: {fileID: 6357888218129766781}
   - component: {fileID: 6133094209451583085}
   - component: {fileID: 7416633853539340128}
+  - component: {fileID: 811019937950756393}
   m_Layer: 7
   m_Name: Model
   m_TagString: Untagged
@@ -243,6 +244,18 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &811019937950756393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 294630506241554227}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d17aa6bb6f4eb5148978a4a5c65f69c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2189696464822406265
 GameObject:
   m_ObjectHideFlags: 0
@@ -787,9 +800,9 @@ ParticleSystem:
         m_NumAlphaKeys: 2
     startSize:
       serializedVersion: 2
-      minMaxState: 0
-      scalar: 0.2
-      minScalar: 1
+      minMaxState: 3
+      scalar: 0.1
+      minScalar: 0.01
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -840,7 +853,7 @@ ParticleSystem:
         m_RotationOrder: 4
     startSizeY:
       serializedVersion: 2
-      minMaxState: 0
+      minMaxState: 3
       scalar: 1
       minScalar: 1
       maxCurve:
@@ -893,7 +906,7 @@ ParticleSystem:
         m_RotationOrder: 4
     startSizeZ:
       serializedVersion: 2
-      minMaxState: 0
+      minMaxState: 3
       scalar: 1
       minScalar: 1
       maxCurve:
@@ -5320,7 +5333,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10301, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 88f6fce92ce2e7c4e84bb61a73f6f914, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5687,11 +5700,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 813bb694e3b83c9418ec0b5796871a41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _playerModel: {fileID: 1547951331732062663}
   _cameraParent: {fileID: 8785074612095012307}
   _playerCamera: {fileID: 5165524906303908369}
   _weaponContainer: {fileID: 1088176348066514695}
   _bobbingContainer: {fileID: 1830669172046768550}
   Speed: 5
+  JumpHeight: 0.03
+  MaxYSpeed: 2
   MouseSensitivity: 1
   LookSpeed: 70
 --- !u!114 &6014518389899158373
