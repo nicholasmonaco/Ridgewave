@@ -57,11 +57,14 @@ public class PlayerController : NetworkBehaviour
 
 
     private void Start() {
+        _charController = GetComponent<CharacterController>();
+        Weapon = _weaponContainer.GetComponentInChildren<Weapon>();
+
         if (IsLocalPlayer) {
-            _charController = GetComponent<CharacterController>();
             Cursor.lockState = CursorLockMode.Locked;
 
             LoadWeapon();
+
             _origBobPos = _bobbingContainer.localPosition;
 
             Game.UI.AlterHealth(CurHealth.Value, MaxHealth.Value);
@@ -82,6 +85,8 @@ public class PlayerController : NetworkBehaviour
         foreach (HitboxChild hitbox in colliders) {
             hitbox.ParentObject = this;
         }
+
+        GetComponent<HitboxChild>().ParentObject = this;
     }
 
 
@@ -104,7 +109,7 @@ public class PlayerController : NetworkBehaviour
         // Destroy old weapon
         // Load new weapon
 
-        Weapon = _weaponContainer.GetComponentInChildren<Weapon>();
+        
 
         _clipRemaining = Weapon.ClipSize;
         Game.UI.AlterAmmo(_clipRemaining, Weapon.ClipSize);
@@ -146,7 +151,7 @@ public class PlayerController : NetworkBehaviour
             _playerVelocity.y += _gravityValue * Time.deltaTime;
         }
 
-        _playerVelocity.y = Mathf.Clamp(_playerVelocity.y, -MaxYSpeed, MaxYSpeed);
+        _playerVelocity.y = CanMove.Value == true ? Mathf.Clamp(_playerVelocity.y, -MaxYSpeed, MaxYSpeed) : 0;
 
         moveVec *= Speed * sprintMult * Time.deltaTime;
 
@@ -181,9 +186,8 @@ public class PlayerController : NetworkBehaviour
         if (IsServer) {
             CurHealth.Value -= damage;
 
-            if (CurHealth.Value <= 0) {
+            if (CurHealth.Value <= 0 && CanMove.Value == true) {
                 CurHealth.Value = 0;
-                //Die(); //this might go in the update ui
                 StartCoroutine(Respawn());
             }
         }
@@ -198,8 +202,6 @@ public class PlayerController : NetworkBehaviour
             yield return null;
         }
 
-        float y = 1;
-
         float r = 30;
         Vector3 newPos = new Vector3(Random.Range(-r, r), 50, Random.Range(-r, r));
 
@@ -210,7 +212,15 @@ public class PlayerController : NetworkBehaviour
             newPos.y = 1;
         }
 
-        _charController.Move(newPos - transform.position);
+        //_charController.Move(newPos - transform.position);
+        RepointPlayerClientRPC(
+            newPos, 
+            new ClientRpcParams {
+                Send = new ClientRpcSendParams {
+                    TargetClientIds = new ulong[] { this.OwnerClientId }
+                }
+            }
+        );
 
         //refresh values
         MaxHealth.Value = 100;
@@ -222,6 +232,11 @@ public class PlayerController : NetworkBehaviour
         
 
         CanMove.Value = true;
+    }
+
+    [ClientRpc]
+    private void RepointPlayerClientRPC(Vector3 newPos, ClientRpcParams clientRpcParams = default) {
+        _charController.Move(newPos - transform.position);
     }
 
     public void UpdateUI(int oldValue, int newValue) {
@@ -238,7 +253,7 @@ public class PlayerController : NetworkBehaviour
     }
 
     private void Reload() {
-        if (Game.Input.Player.Reload.ReadValue<float>() > 0 && !_reloading) {
+        if (Game.Input.Player.Reload.ReadValue<float>() > 0 && !_reloading && _clipRemaining < Weapon.ClipSize) {
             DoReload();
         }
     }
@@ -249,9 +264,24 @@ public class PlayerController : NetworkBehaviour
     }
 
     private IEnumerator Reload_C(float reloadTime) {
-        yield return new WaitForSeconds(reloadTime);
+        float angle = 0;
+        float timer = reloadTime;
+
+        Transform gunTransform = _weaponContainer.GetChild(0);
+        Quaternion origRot = gunTransform.localRotation;
+        Vector3 origAxis = gunTransform.right;
+
+        while(timer > 0) {
+            timer -= Time.deltaTime;
+            angle = timer / reloadTime * 360;
+            gunTransform.localRotation = origRot * Quaternion.Euler(angle, 0, 0);
+            yield return null;
+        }
+
         _clipRemaining = Weapon.ClipSize;
         Game.UI.AlterAmmo(_clipRemaining, Weapon.ClipSize);
+
+        gunTransform.localRotation = origRot;
 
         yield return new WaitForEndOfFrame();
 

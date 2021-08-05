@@ -8,4 +8,5 @@ public class GameManager : MonoBehaviour {
     }
 
     public GameObject BulletPrefab;
+    public GameObject DeathPlanePrefab;
 }
