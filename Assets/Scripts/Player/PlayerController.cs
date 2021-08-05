@@ -269,12 +269,17 @@ public class PlayerController : NetworkBehaviour
 
         Transform gunTransform = _weaponContainer.GetChild(0);
         Quaternion origRot = gunTransform.localRotation;
-        Vector3 origAxis = gunTransform.right;
+
+        bool barrelRoll = Random.Range(0f, 200f) <= 1;
 
         while(timer > 0) {
             timer -= Time.deltaTime;
             angle = timer / reloadTime * 360;
-            gunTransform.localRotation = origRot * Quaternion.Euler(angle, 0, 0);
+            if (barrelRoll) {
+                gunTransform.localRotation = origRot * Quaternion.AngleAxis(angle, _weaponContainer.right);
+            } else {
+                gunTransform.localRotation = origRot * Quaternion.Euler(angle, 0, 0);
+            }
             yield return null;
         }
 

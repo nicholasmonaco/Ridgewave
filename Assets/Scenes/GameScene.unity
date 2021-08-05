@@ -2688,8 +2688,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _menuCamera: {fileID: 314092301}
   _gameUI: {fileID: 2113803135}
-  _ipField: {fileID: 0}
-  _portField: {fileID: 0}
+  _ipField: {fileID: 829804163}
+  _portField: {fileID: 1292922625}
   _mainPanel: {fileID: 1460987567}
   _connectPanel: {fileID: 1883826290}
 --- !u!4 &782432634
@@ -3045,7 +3045,7 @@ MonoBehaviour:
     MaxReceiveEventsPerTickRate: 500
     EventTickrate: 64
     ClientConnectionBufferTimeout: 10
-    ConnectionApproval: 0
+    ConnectionApproval: 1
     ConnectionData: 
     EnableTimeResync: 0
     TimeResyncInterval: 30

@@ -21,8 +21,17 @@ public class MenuManager : MonoBehaviour
 
     private void Start() {
         _curPanel = _mainPanel;
+
+        NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
     }
 
+
+    private void ApprovalCheck(byte[] connectionData, ulong clientId, NetworkManager.ConnectionApprovedDelegate callback) {
+        bool approve = true;
+
+
+        callback(true, null, approve, new Vector3(0, 5, 0), Quaternion.identity);
+    }
 
 
     private void OnPlay() {
@@ -61,6 +70,16 @@ public class MenuManager : MonoBehaviour
         OnPlay();
         NetworkManager.Singleton.StartClient();
     }
+
+
+    
+
+
+
+
+
+
+
 
     public void ExitGame() {
         Application.Quit();
