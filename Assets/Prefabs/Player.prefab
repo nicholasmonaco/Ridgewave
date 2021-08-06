@@ -440,7 +440,7 @@ MonoBehaviour:
   JumpHeight: 0.03
   MaxYSpeed: 2
   MouseSensitivity: 1
-  LookSpeed: 70
+  LookSpeed: 20
 --- !u!114 &6014518389899158373
 MonoBehaviour:
   m_ObjectHideFlags: 0

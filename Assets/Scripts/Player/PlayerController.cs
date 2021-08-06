@@ -21,6 +21,10 @@ public class PlayerController : NetworkBehaviour
     NetworkVariableInt MaxHealth = new NetworkVariableInt(100);
     NetworkVariableBool CanMove = new NetworkVariableBool(true);
 
+    private bool _canMove => CanMove.Value && !Game.Manager.PauseMenu.Paused;
+    private bool _canLook => !Game.Manager.PauseMenu.Paused;
+    private bool _canAttack => CanMove.Value && !Game.Manager.PauseMenu.Paused;
+
     public float Speed = 5;
     public float JumpHeight = 3;
     public float MaxYSpeed = 2;
@@ -42,17 +46,41 @@ public class PlayerController : NetworkBehaviour
 
 
     private void OnEnable() {
-        CurHealth.OnValueChanged += UpdateUI;
-        MaxHealth.OnValueChanged += UpdateUI;
-
         if (IsServer) {
             CurHealth.Value = MaxHealth.Value;
+        } else {
+            OptionUpdateAction();
+        }
+
+        if (IsOwner) {
+            CurHealth.OnValueChanged += UpdateUI;
+            MaxHealth.OnValueChanged += UpdateUI;
         }
     }
 
+    public void LoadSettings() {
+        Options.UpdateActions += OptionUpdateAction;
+
+        if (!Options.Loaded) Options.LoadSettings();
+        OptionUpdateAction();
+    }
+
+    private void OptionUpdateAction() {
+        _playerCamera.fieldOfView = Options.FOV;
+        MouseSensitivity = Options.Sensitivity * 0.03f;
+    }
+
     private void OnDisable() {
-        CurHealth.OnValueChanged -= UpdateUI;
-        MaxHealth.OnValueChanged -= UpdateUI;
+        if (IsOwner) {
+            CurHealth.OnValueChanged -= UpdateUI;
+            MaxHealth.OnValueChanged -= UpdateUI;
+        }
+    }
+
+    private void OnDestroy() {
+        if (IsLocalPlayer) {
+            Options.UpdateActions -= OptionUpdateAction;
+        }
     }
 
 
@@ -61,6 +89,8 @@ public class PlayerController : NetworkBehaviour
         Weapon = _weaponContainer.GetComponentInChildren<Weapon>();
 
         if (IsLocalPlayer) {
+            LoadSettings();
+
             Cursor.lockState = CursorLockMode.Locked;
 
             LoadWeapon();
@@ -93,8 +123,8 @@ public class PlayerController : NetworkBehaviour
     private void Update() {
         if(IsLocalPlayer) {
             GetMoveVars();
-            Look();
-            if(CanMove.Value) Attack();
+            if(_canLook) Look();
+            if(_canAttack) Attack();
         }
     }
 
@@ -123,8 +153,8 @@ public class PlayerController : NetworkBehaviour
     private float in_sprint;
 
     private void GetMoveVars() {
-        in_moveVec = CanMove.Value == true ? Game.Input.Player.Move.ReadValue<Vector2>() : Vector2.zero;
-        in_jump = CanMove.Value == true ? Game.Input.Player.Jump.ReadValue<float>() : 0;
+        in_moveVec = _canMove == true ? Game.Input.Player.Move.ReadValue<Vector2>() : Vector2.zero;
+        in_jump = _canMove == true ? Game.Input.Player.Jump.ReadValue<float>() : 0;
         in_sprint = Game.Input.Player.Sprint.ReadValue<float>();
     }
 
@@ -173,11 +203,18 @@ public class PlayerController : NetworkBehaviour
 
         _pitch -= lookVec.y;
         _pitch = Mathf.Clamp(_pitch, -82.5f, 82.5f);
-        // _cameraParent.localRotation = Quaternion.Euler(_pitch, _cameraParent.localRotation.eulerAngles.y + lookVec.x, 0);
 
         _cameraParent.localRotation = Quaternion.Lerp(_cameraParent.localRotation,
                                                       Quaternion.Euler(_pitch, _cameraParent.localRotation.eulerAngles.y + lookVec.x, 0),
                                                       Time.deltaTime * LookSpeed);
+
+        //_pitch = _cameraParent.localRotation.eulerAngles.x;
+        float angle = _cameraParent.localRotation.eulerAngles.x;
+        angle = (angle > 180) ? angle - 360 : angle;
+
+        _pitch = angle;
+
+        // _cameraParent.localRotation = Quaternion.Euler(_pitch, _cameraParent.localRotation.eulerAngles.y + lookVec.x, 0);
     }
 
 

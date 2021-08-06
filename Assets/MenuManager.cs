@@ -5,16 +5,26 @@ using MLAPI;
 using MLAPI.Transports.UNET;
 using TMPro;
 using System;
+using UnityEngine.UI;
 
 public class MenuManager : MonoBehaviour
 {
     [SerializeField] private Camera _menuCamera;
     [SerializeField] private Transform _gameUI;
-    [SerializeField] private TMP_InputField _ipField;
-    [SerializeField] private TMP_InputField _portField;
+
+    [SerializeField] private TMP_InputField _ipJoinField;
+    [SerializeField] private TMP_InputField _portJoinField;
+
+    [SerializeField] private TMP_InputField _passwordHostField;
+    [SerializeField] private TMP_InputField _portHostField;
+
 
     [SerializeField] private Transform _mainPanel;
-    [SerializeField] private Transform _connectPanel;
+    [SerializeField] private Transform _joinPanel;
+    [SerializeField] private Transform _hostPanel;
+    [SerializeField] private Transform _optionsPanel;
+
+    [SerializeField] private Transform _characterPanel;
 
     private Transform _curPanel;
 
@@ -35,21 +45,43 @@ public class MenuManager : MonoBehaviour
 
 
     private void OnPlay() {
+        Game.Manager.InGame = true;
         _gameUI.gameObject.SetActive(true);
 
         this.gameObject.SetActive(false);
     }
 
+    public void BackToMainMenu() {
+        Game.Manager.InGame = false;
+
+        _gameUI.gameObject.SetActive(false);
+        this.gameObject.SetActive(true);
+
+        _mainPanel.gameObject.SetActive(true);
+        _curPanel.gameObject.SetActive(false);
+
+        _curPanel = _mainPanel;
+    }
+
     public void OnHost() {
-        OnPlay();
-        NetworkManager.Singleton.StartHost(); //lots of options here, do it boiiiiiii
+        _hostPanel.gameObject.SetActive(true);
+        _curPanel.gameObject.SetActive(false);
+
+        _curPanel = _hostPanel;
     }
 
     public void OnJoin() {
-        _connectPanel.gameObject.SetActive(true);
-        _mainPanel.gameObject.SetActive(false);
+        _joinPanel.gameObject.SetActive(true);
+        _curPanel.gameObject.SetActive(false);
 
-        _curPanel = _connectPanel;
+        _curPanel = _joinPanel;
+    }
+
+    public void OnOptions() {
+        _optionsPanel.gameObject.SetActive(true);
+        _curPanel.gameObject.SetActive(false);
+
+        _curPanel = _optionsPanel;
     }
 
     public void OnBackToMain() {
@@ -59,10 +91,47 @@ public class MenuManager : MonoBehaviour
         _curPanel = _mainPanel;
     }
 
-    public void OnConnect() {
-        string ip = _ipField.text;
+    public void OnBackToMain_Options() {
+        Options.SaveSettings();
+
+        _mainPanel.gameObject.SetActive(true);
+        _curPanel.gameObject.SetActive(false);
+
+        _curPanel = _mainPanel;
+    }
+
+
+    public void StartHost() {
         int port;
-        try { port = Convert.ToInt32(_portField.text); } catch { port = 7777; }
+        try { 
+            if(_portHostField.text.Trim() == "") {
+                port = 7777;
+            } else {
+                port = Convert.ToInt32(_portHostField.text);
+            }
+        } catch { port = 7777; }
+
+        NetworkManager.Singleton.GetComponent<UNetTransport>().ServerListenPort = port;
+        NetworkManager.Singleton.GetComponent<UNetTransport>().ConnectPort = port;
+
+        OnPlay();
+        NetworkManager.Singleton.StartHost(); 
+    }
+
+    public void OnConnect_Join() {
+        string ip = _ipJoinField.text.Trim();
+        if (ip == "") {
+            ip = "127.0.0.1";
+        }
+
+        int port;
+        try { 
+            if(_portHostField.text.Trim() == "") {
+                port = 7777;
+            } else {
+                port = Convert.ToInt32(_portJoinField.text);
+            }
+        } catch { port = 7777; }
 
         NetworkManager.Singleton.GetComponent<UNetTransport>().ConnectAddress = ip;
         NetworkManager.Singleton.GetComponent<UNetTransport>().ConnectPort = port;

@@ -7,7 +7,8 @@ using MLAPI.Spawning;
 
 public class Bullet : NetworkBehaviour
 {
-    [HideInInspector] public int Damage = 8;
+    public int Damage = 8;
+    public float ShotSpeed = 250;
 
     private LayerMask _hitMask;
     private LayerMask _damageMask;
@@ -16,7 +17,7 @@ public class Bullet : NetworkBehaviour
 
     private void Start() {
         if (IsOwner) {
-            GetComponent<Rigidbody>().velocity = transform.forward * 50;
+            GetComponent<Rigidbody>().velocity = transform.forward * ShotSpeed;
             _hitMask = LayerMask.GetMask("POV", "LocalPlayer");
             _damageMask = LayerMask.GetMask("OtherPlayer");
             StartCoroutine(DelayDeath(2f, () => { DestroyBulletServerRpc(GetComponent<NetworkObject>().NetworkObjectId); }));
